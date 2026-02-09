@@ -216,6 +216,24 @@ impl Application {
         self
     }
 
+    /// Invokes a handler when the application becomes active (e.g. via Cmd+Tab).
+    /// On macOS, this corresponds to `applicationDidBecomeActive:`.
+    pub fn on_become_active<F>(&self, mut callback: F) -> &Self
+    where
+        F: 'static + FnMut(&mut App),
+    {
+        let this = Rc::downgrade(&self.0);
+        self.0
+            .borrow_mut()
+            .platform
+            .on_become_active(Box::new(move || {
+                if let Some(app) = this.upgrade() {
+                    callback(&mut app.borrow_mut());
+                }
+            }));
+        self
+    }
+
     /// Returns a handle to the [`BackgroundExecutor`] associated with this app, which can be used to spawn futures in the background.
     pub fn background_executor(&self) -> BackgroundExecutor {
         self.0.borrow().background_executor.clone()

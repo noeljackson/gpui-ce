@@ -97,6 +97,10 @@ unsafe fn build_classes() {
                 should_handle_reopen as extern "C" fn(&mut Object, Sel, id, bool),
             );
             decl.add_method(
+                sel!(applicationDidBecomeActive:),
+                did_become_active as extern "C" fn(&mut Object, Sel, id),
+            );
+            decl.add_method(
                 sel!(applicationWillTerminate:),
                 will_terminate as extern "C" fn(&mut Object, Sel, id),
             );
@@ -168,6 +172,7 @@ pub(crate) struct MacPlatformState {
     text_hash_pasteboard_type: id,
     metadata_pasteboard_type: id,
     reopen: Option<Box<dyn FnMut()>>,
+    become_active: Option<Box<dyn FnMut()>>,
     on_keyboard_layout_change: Option<Box<dyn FnMut()>>,
     quit: Option<Box<dyn FnMut()>>,
     menu_command: Option<Box<dyn FnMut(&dyn Action)>>,
@@ -210,6 +215,7 @@ impl MacPlatform {
             text_hash_pasteboard_type: unsafe { ns_string("zed-text-hash") },
             metadata_pasteboard_type: unsafe { ns_string("zed-metadata") },
             reopen: None,
+            become_active: None,
             quit: None,
             menu_command: None,
             validate_menu_command: None,
@@ -889,6 +895,10 @@ impl Platform for MacPlatform {
         self.0.lock().reopen = Some(callback);
     }
 
+    fn on_become_active(&self, callback: Box<dyn FnMut()>) {
+        self.0.lock().become_active = Some(callback);
+    }
+
     fn on_keyboard_layout_change(&self, callback: Box<dyn FnMut()>) {
         self.0.lock().on_keyboard_layout_change = Some(callback);
     }
@@ -1426,6 +1436,16 @@ extern "C" fn should_handle_reopen(this: &mut Object, _: Sel, _: id, has_open_wi
             callback();
             platform.0.lock().reopen.get_or_insert(callback);
         }
+    }
+}
+
+extern "C" fn did_become_active(this: &mut Object, _: Sel, _: id) {
+    let platform = unsafe { get_mac_platform(this) };
+    let mut lock = platform.0.lock();
+    if let Some(mut callback) = lock.become_active.take() {
+        drop(lock);
+        callback();
+        platform.0.lock().become_active.get_or_insert(callback);
     }
 }
 

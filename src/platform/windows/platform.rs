@@ -69,6 +69,7 @@ struct PlatformCallbacks {
     open_urls: Cell<Option<Box<dyn FnMut(Vec<String>)>>>,
     quit: Cell<Option<Box<dyn FnMut()>>>,
     reopen: Cell<Option<Box<dyn FnMut()>>>,
+    become_active: Cell<Option<Box<dyn FnMut()>>>,
     app_menu_action: Cell<Option<Box<dyn FnMut(&dyn Action)>>>,
     will_open_app_menu: Cell<Option<Box<dyn FnMut()>>>,
     validate_app_menu_command: Cell<Option<Box<dyn FnMut(&dyn Action) -> bool>>>,
@@ -545,6 +546,10 @@ impl Platform for WindowsPlatform {
 
     fn on_reopen(&self, callback: Box<dyn FnMut()>) {
         self.inner.state.callbacks.reopen.set(Some(callback));
+    }
+
+    fn on_become_active(&self, callback: Box<dyn FnMut()>) {
+        self.inner.state.callbacks.become_active.set(Some(callback));
     }
 
     fn set_menus(&self, menus: Vec<Menu>, _keymap: &Keymap) {

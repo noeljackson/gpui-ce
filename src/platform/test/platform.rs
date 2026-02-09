@@ -371,6 +371,8 @@ impl Platform for TestPlatform {
         unimplemented!()
     }
 
+    fn on_become_active(&self, _callback: Box<dyn FnMut()>) {}
+
     fn set_menus(&self, _menus: Vec<crate::Menu>, _keymap: &Keymap) {}
     fn set_dock_menu(&self, _menu: Vec<crate::MenuItem>, _keymap: &Keymap) {}
 

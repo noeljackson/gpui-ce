@@ -131,6 +131,7 @@ pub(crate) struct PlatformHandlers {
     pub(crate) open_urls: Option<Box<dyn FnMut(Vec<String>)>>,
     pub(crate) quit: Option<Box<dyn FnMut()>>,
     pub(crate) reopen: Option<Box<dyn FnMut()>>,
+    pub(crate) become_active: Option<Box<dyn FnMut()>>,
     pub(crate) app_menu_action: Option<Box<dyn FnMut(&dyn Action)>>,
     pub(crate) will_open_app_menu: Option<Box<dyn FnMut()>>,
     pub(crate) validate_app_menu_command: Option<Box<dyn FnMut(&dyn Action) -> bool>>,
@@ -488,6 +489,12 @@ impl<P: LinuxClient + 'static> Platform for P {
     fn on_reopen(&self, callback: Box<dyn FnMut()>) {
         self.with_common(|common| {
             common.callbacks.reopen = Some(callback);
+        });
+    }
+
+    fn on_become_active(&self, callback: Box<dyn FnMut()>) {
+        self.with_common(|common| {
+            common.callbacks.become_active = Some(callback);
         });
     }
 
