@@ -154,7 +154,7 @@ impl<'a> SerializedThreadTaskTimings<'a> {
 // Allow 20mb of task timing entries
 const MAX_TASK_TIMINGS: usize = (20 * 1024 * 1024) / core::mem::size_of::<TaskTiming>();
 
-pub(crate) type TaskTimings = circular_buffer::CircularBuffer<MAX_TASK_TIMINGS, TaskTiming>;
+pub(crate) type TaskTimings = circular_buffer::FixedCircularBuffer<TaskTiming, MAX_TASK_TIMINGS>;
 pub(crate) type GuardedTaskTimings = spin::Mutex<ThreadTimings>;
 
 pub(crate) struct GlobalThreadTimings {
@@ -231,4 +231,46 @@ pub(crate) fn add_task_timing(timing: TaskTiming) {
 
         timings.push_back(timing);
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::Duration;
+
+    #[test]
+    fn task_timings_overwrite_oldest_and_preserve_order() {
+        let anchor = Instant::now();
+        let timing_at = |index: usize| TaskTiming {
+            location: core::panic::Location::caller(),
+            start: anchor + Duration::from_nanos(index as u64),
+            end: None,
+        };
+        let index_of =
+            |timing: &TaskTiming| timing.start.duration_since(anchor).as_nanos() as usize;
+
+        // Overflowing by a few entries wraps the buffer, so both slices are non-empty.
+        let overflow = 3;
+        let mut timings = TaskTimings::boxed();
+        for index in 0..MAX_TASK_TIMINGS + overflow {
+            timings.push_back(timing_at(index));
+        }
+
+        let end = anchor + Duration::from_secs(1);
+        if let Some(last_timing) = timings.iter_mut().rev().next() {
+            last_timing.end = Some(end);
+        }
+
+        assert_eq!(timings.len(), MAX_TASK_TIMINGS);
+        let (front, back) = timings.as_slices();
+        assert!(!front.is_empty() && !back.is_empty());
+        let recorded = front.iter().chain(back).collect::<Vec<_>>();
+        assert!(
+            recorded
+                .iter()
+                .map(|timing| index_of(timing))
+                .eq(overflow..MAX_TASK_TIMINGS + overflow)
+        );
+        assert_eq!(recorded.last().and_then(|timing| timing.end), Some(end));
+    }
 }

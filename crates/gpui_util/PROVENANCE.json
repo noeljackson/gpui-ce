@@ -1,0 +1,88 @@
+{
+  "format": "gpui-ce-imported-crate-provenance/1",
+  "package": {
+    "name": "gpui_util",
+    "version": "0.2.2",
+    "license": "Apache-2.0",
+    "license_file": "LICENSE-APACHE",
+    "repository": null,
+    "repository_note": "The published manifest declares no repository."
+  },
+  "source": {
+    "registry": "registry+https://github.com/rust-lang/crates.io-index",
+    "crate_page": "https://crates.io/crates/gpui_util/0.2.2",
+    "archive_url": "https://static.crates.io/crates/gpui_util/0.2.2/download",
+    "archive_file_name": "gpui_util-0.2.2.crate",
+    "archive_sha256": "68faea25903ae524de9af83990b9aa51bcbc8dd085929ac0aea7fd41905e05c3",
+    "archive_root": "gpui_util-0.2.2/",
+    "archive_sha256_matches": [
+      "crates.io index cksum for gpui_util 0.2.2",
+      "gpui-ce Cargo.lock registry entry for gpui_util 0.2.2 at a6edb09e6114da3d54b2da1ae6296a103120568e",
+      "Codewire desktop Cargo.lock registry entry for gpui_util 0.2.2"
+    ],
+    "cargo_vcs_info": {
+      "sha1": "69e2130295c2649963eb639fc70b4f2ee8ea1624",
+      "dirty": true,
+      "path_in_vcs": "crates/util"
+    },
+    "authority": "The published archive bytes are authoritative. The archive was packaged from a dirty VCS tree, so a checkout of the named commit cannot be assumed to reproduce it."
+  },
+  "import": {
+    "path": "crates/gpui_util",
+    "base_commit": "a6edb09e6114da3d54b2da1ae6296a103120568e",
+    "method": "All 23 archive members extracted byte-for-byte; only the files listed as modified were changed afterwards.",
+    "consumed_by": "Root Cargo.toml [patch.crates-io] gpui_util = { path = \"crates/gpui_util\" }"
+  },
+  "modifications": [
+    {
+      "path": "Cargo.toml",
+      "reason": "Replace the vulnerable git2 0.20 line with git2 0.21.0 in the optional test-support dependency and the dev-dependency.",
+      "changes": [
+        { "table": "dependencies.git2", "field": "version", "from": "0.20.1", "to": "=0.21.0" },
+        { "table": "dev-dependencies.git2", "field": "version", "from": "0.20.1", "to": "=0.21.0" },
+        { "kind": "notice", "description": "Prepended an Apache License 2.0 section 4(b) modification notice comment." }
+      ],
+      "unchanged": "Package identity (name gpui_util, version 0.2.2), features including test-support, all other dependencies, lints and license metadata."
+    },
+    {
+      "path": "Cargo.lock",
+      "reason": "Regenerated so the imported lock no longer pins git2 0.20.",
+      "method": "Conservative cargo re-resolution using the published Cargo.lock as the previous resolve.",
+      "command": "cargo tree --manifest-path crates/gpui_util/Cargo.toml -i git2 --edges all --target all",
+      "toolchain": {
+        "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
+        "rustc": "rustc 1.93.0 (254b59607 2026-01-19)"
+      },
+      "changes": [
+        { "package": "git2", "from": "0.20.2", "to": "0.21.0" },
+        { "package": "libgit2-sys", "from": "0.18.2+1.9.1", "to": "0.18.8+1.9.7" }
+      ]
+    }
+  ],
+  "added_files": ["PROVENANCE.json"],
+  "files": [
+    { "path": ".cargo_vcs_info.json", "archive_sha256": "9b1ad1508a65a53d0970665873945971948b0129ad1e37426154de39dbfe0dfd", "status": "unmodified" },
+    { "path": "Cargo.lock", "archive_sha256": "701163bd6537ab89b5d3329bc9079d90dc66426c60b5383aab000b77c732c1a4", "status": "modified", "sha256": "acfdf1622b631df9259dcddd4ea5c05ffa5c2bd988682c633e381c2db304c36a" },
+    { "path": "Cargo.toml", "archive_sha256": "5ed3e3faa9160fdadbc82c8131ee5346f0cebee2de87630d6d92be2b0c9dd60a", "status": "modified", "sha256": "19160ef014cbfab39be783577aed9fce264796e0b815559a978a85b2ad81edf6" },
+    { "path": "Cargo.toml.orig", "archive_sha256": "b4c0daf36c36cec856498f2771e1b921e150a2d22a4404097d84ebe0f3bd840a", "status": "unmodified" },
+    { "path": "LICENSE-APACHE", "archive_sha256": "752daf2fb234ca4a1fa372c073fe127f44b7b90fd2529ae44273a64f9d53da7a", "status": "unmodified" },
+    { "path": "src/arc_cow.rs", "archive_sha256": "d10dea6ce77e8374a8cbe8b24eae50b6c571d9173b9278c7971a5d52143ac5bf", "status": "unmodified" },
+    { "path": "src/archive.rs", "archive_sha256": "82c7345cf0a6bff435535937c8a9c71a28ff511c2b23b343a07f8337f2802f12", "status": "unmodified" },
+    { "path": "src/command.rs", "archive_sha256": "cd5516eaddbed443d4c9078fdb30c2ef767b91e8a939322cd59a5783131c2adc", "status": "unmodified" },
+    { "path": "src/fs.rs", "archive_sha256": "5a1ca82782b600396555c42bc3a27572e2c521e551e75d89d0b12995be7ed3c0", "status": "unmodified" },
+    { "path": "src/markdown.rs", "archive_sha256": "4f57c8fbe1c3860ba0c5307fa9530c791c195927a82f6ed4b1f82d6f47a12cbb", "status": "unmodified" },
+    { "path": "src/paths.rs", "archive_sha256": "1fd7a06d4a87254ffa363337158b2bc25845194c536d78b6f86b04304b4217ab", "status": "unmodified" },
+    { "path": "src/redact.rs", "archive_sha256": "8d734ee225374f404aef4a898307ecfe9df144326bdb30814398eef5ba01cf4f", "status": "unmodified" },
+    { "path": "src/rel_path.rs", "archive_sha256": "20975542ad4a2a0d0ec092a6348f3fef82538d7d0b1fcfb4f6e78a61fdc4b991", "status": "unmodified" },
+    { "path": "src/schemars.rs", "archive_sha256": "6f2d3bc23b9a3f7fc75d4ff9dc6e378618c9010ba04702cdc8676605f81834df", "status": "unmodified" },
+    { "path": "src/serde.rs", "archive_sha256": "2f4e12eff943aea511b8a22f84e9a95349561a427fca895b8196f13a2356c03f", "status": "unmodified" },
+    { "path": "src/shell.rs", "archive_sha256": "2758b6a9f73f64a1d379d723a723ee5c9035ec93c9932273f44f3384544f6ba0", "status": "unmodified" },
+    { "path": "src/shell_env.rs", "archive_sha256": "236bb9508e4033d1d30784404ca9b85eab06e18ce3ad9a3c77081dbfcbbc2862", "status": "unmodified" },
+    { "path": "src/size.rs", "archive_sha256": "db42bf5e49d9816bf9cdce618ab6c8ff5e6209962a561e6baed1cdbceec09445", "status": "unmodified" },
+    { "path": "src/test.rs", "archive_sha256": "0f0f6c4c900e42067c4444a0c9caac7ab9e4b6fb81b9f438ed670915a6892b18", "status": "unmodified" },
+    { "path": "src/test/assertions.rs", "archive_sha256": "2021ac591d0d2d6b31bbef30b226efdcbea72eb5c6fcea17ef8606867bc096e2", "status": "unmodified" },
+    { "path": "src/test/marked_text.rs", "archive_sha256": "9b382fb205bbd04edb62f60ef8a1a84ee8b85c9187cd4790da98e2f7540dec81", "status": "unmodified" },
+    { "path": "src/time.rs", "archive_sha256": "5370cb5b91cbf50ac7befaeb27258881af663e6bca099610370061ef996bd3ed", "status": "unmodified" },
+    { "path": "src/util.rs", "archive_sha256": "e74ca9074999ba3ae1b01072ba46d3587249b2b353f90bdd7c11e375ab048102", "status": "unmodified" }
+  ]
+}

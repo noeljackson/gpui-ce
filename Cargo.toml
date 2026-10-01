@@ -2,6 +2,7 @@
 name = "gpui-ce"
 version = "0.3.3"
 edition = "2024"
+rust-version = "1.93.0"
 authors = ["Nathan Sobo <nathan@zed.dev>"]
 description = "A community fork of Zed's GPU-accelerated UI framework"
 repository = "https://github.com/gpui-ce/gpui-ce"
@@ -90,7 +91,7 @@ blade-graphics = { version = "0.7.0", optional = true }
 blade-macros = { version = "0.3.0", optional = true }
 blade-util = { version = "0.3.0", optional = true }
 bytemuck = { version = "1", optional = true }
-circular-buffer = "1.0"
+circular-buffer = "=2.0.1"
 collections = { package = "gpui_collections", version = "0.2.2" }
 ctor = "0.4.0"
 derive_more = "0.99.17"
@@ -303,6 +304,7 @@ naga = { version = "25.0", features = ["wgsl-in"] }
 
 [patch.crates-io]
 calloop = { git = "https://github.com/zed-industries/calloop" }
+gpui_util = { path = "crates/gpui_util" }
 
 # ============================================================================
 # Learn Examples - Educational examples for learning GPUI
