@@ -835,6 +835,7 @@ pub struct Window {
     pub(crate) invalidator: WindowInvalidator,
     pub(crate) removed: bool,
     pub(crate) platform_window: Box<dyn PlatformWindow>,
+    native_child_teardowns: SubscriberSet<(), Box<dyn FnOnce()>>,
     display_id: Option<DisplayId>,
     sprite_atlas: Arc<dyn PlatformAtlas>,
     text_system: Arc<WindowTextSystem>,
@@ -1271,6 +1272,7 @@ impl Window {
             viewport_size: content_size,
             layout_engine: Some(TaffyLayoutEngine::new()),
             root: None,
+            native_child_teardowns: SubscriberSet::new(),
             element_id_stack: SmallVec::default(),
             text_style_stack: Vec::new(),
             rendered_entity_stack: Vec::new(),
@@ -1414,6 +1416,15 @@ impl Window {
     /// Obtain a handle to the window that belongs to this context.
     pub fn window_handle(&self) -> AnyWindowHandle {
         self.handle
+    }
+
+    /// Run synchronous native-child cleanup before this window's platform owner
+    /// is destroyed, including programmatic removal and application shutdown.
+    /// The callback must not reenter GPUI or defer its cleanup to another task.
+    pub fn on_native_child_teardown(&self, callback: impl FnOnce() + 'static) -> Subscription {
+        let (subscription, activate) = self.native_child_teardowns.insert((), Box::new(callback));
+        activate();
+        subscription
     }
 
     /// Mark the window as dirty, scheduling it to be redrawn on the next frame.
@@ -4988,6 +4999,14 @@ impl AnyWindowHandle {
             .context("the type of the window's root view has changed")?;
 
         cx.read_window(&view, read)
+    }
+}
+
+impl Drop for Window {
+    fn drop(&mut self) {
+        for cleanup in self.native_child_teardowns.remove(&()) {
+            cleanup();
+        }
     }
 }
 

@@ -13,7 +13,9 @@ use smallvec::SmallVec;
 use std::{
     cell::RefCell,
     collections::{BTreeMap, HashSet},
+    ffi::CString,
     ops::Deref,
+    os::unix::ffi::OsStrExt as _,
     path::PathBuf,
     rc::{Rc, Weak},
     time::{Duration, Instant},
@@ -183,6 +185,7 @@ pub struct X11ClientState {
 
     xkb_context: xkbc::Context,
     pub(crate) xcb_connection: Rc<XCBConnection>,
+    pub(super) xlib_display: Rc<super::xlib::XlibDisplayOwner>,
     xkb_device_id: i32,
     client_side_decorations_supported: bool,
     pub(crate) x_root_index: usize,
@@ -352,7 +355,10 @@ impl X11Client {
                 anyhow!("Failed to initialize event loop handling of foreground tasks: {err:?}")
             })?;
 
-        let (xcb_connection, x_root_index) = XCBConnection::connect(None)?;
+        let display_name = std::env::var_os("DISPLAY").context("X11 display is not configured")?;
+        let display_name =
+            CString::new(display_name.as_bytes()).context("invalid X11 display name")?;
+        let (xcb_connection, x_root_index) = XCBConnection::connect(Some(&display_name))?;
         xcb_connection.prefetch_extension_information(xkb::X11_EXTENSION_NAME)?;
         xcb_connection.prefetch_extension_information(randr::X11_EXTENSION_NAME)?;
         xcb_connection.prefetch_extension_information(render::X11_EXTENSION_NAME)?;
@@ -496,6 +502,11 @@ impl X11Client {
 
         xcb_flush(&xcb_connection);
 
+        let xlib_display = Rc::new(super::xlib::XlibDisplayOwner::new(
+            display_name,
+            xcb_connection.clone(),
+        ));
+
         Ok(X11Client(Rc::new(RefCell::new(X11ClientState {
             modifiers: Modifiers::default(),
             capslock: Capslock::default(),
@@ -513,6 +524,7 @@ impl X11Client {
 
             xkb_context,
             xcb_connection,
+            xlib_display,
             xkb_device_id,
             client_side_decorations_supported,
             x_root_index,
@@ -1491,6 +1503,7 @@ impl LinuxClient for X11Client {
             &state.gpu_context,
             params,
             &state.xcb_connection,
+            state.xlib_display.clone(),
             state.client_side_decorations_supported,
             state.x_root_index,
             x_window,

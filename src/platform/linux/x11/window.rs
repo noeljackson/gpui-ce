@@ -249,6 +249,8 @@ pub struct Callbacks {
 
 pub struct X11WindowState {
     pub destroyed: bool,
+    native_screen: usize,
+    native_visual: u32,
     client: X11ClientStatePtr,
     executor: ForegroundExecutor,
     atoms: XcbAtoms,
@@ -286,6 +288,7 @@ pub(crate) struct X11WindowStatePtr {
     pub state: Rc<RefCell<X11WindowState>>,
     pub(crate) callbacks: Rc<RefCell<Callbacks>>,
     xcb: Rc<XCBConnection>,
+    xlib_display: Rc<super::xlib::XlibDisplayOwner>,
     pub(crate) x_window: xproto::Window,
 }
 
@@ -311,14 +314,45 @@ impl rwh::HasDisplayHandle for RawWindow {
     }
 }
 
+impl X11Window {
+    fn native_display(&self) -> Result<(NonNull<c_void>, i32, u32), rwh::HandleError> {
+        let state = self.0.state.borrow();
+        if state.destroyed || self.0.x_window == 0 {
+            return Err(rwh::HandleError::Unavailable);
+        }
+        let screen =
+            i32::try_from(state.native_screen).map_err(|_| rwh::HandleError::Unavailable)?;
+        match self
+            .0
+            .xlib_display
+            .display(self.0.x_window, state.native_screen, state.native_visual)
+        {
+            Ok(display) => Ok((display, screen, state.native_visual)),
+            Err(error) => {
+                log::error!("native Xlib display admission failed: {error:#}");
+                Err(rwh::HandleError::Unavailable)
+            }
+        }
+    }
+}
+
 impl rwh::HasWindowHandle for X11Window {
     fn window_handle(&self) -> Result<rwh::WindowHandle<'_>, rwh::HandleError> {
-        unimplemented!()
+        let (_, _, visual) = self.native_display()?;
+        let mut handle = rwh::XlibWindowHandle::new(self.0.x_window.into());
+        handle.visual_id = visual.into();
+        // The owned window and admitted display remain alive through this borrow.
+        Ok(unsafe { rwh::WindowHandle::borrow_raw(handle.into()) })
     }
 }
 impl rwh::HasDisplayHandle for X11Window {
     fn display_handle(&self) -> Result<rwh::DisplayHandle<'_>, rwh::HandleError> {
-        unimplemented!()
+        let (display, screen, _) = self.native_display()?;
+        Ok(unsafe {
+            rwh::DisplayHandle::borrow_raw(
+                rwh::XlibDisplayHandle::new(Some(display), screen).into(),
+            )
+        })
     }
 }
 
@@ -669,6 +703,8 @@ impl X11WindowState {
             Ok(Self {
                 client,
                 executor,
+                native_screen: x_screen_index,
+                native_visual: visual.id,
                 display,
                 x_root_window: visual_set.root,
                 bounds: bounds.to_pixels(scale_factor),
@@ -767,6 +803,7 @@ impl X11Window {
         gpu_context: &BladeContext,
         params: WindowParams,
         xcb: &Rc<XCBConnection>,
+        xlib_display: Rc<super::xlib::XlibDisplayOwner>,
         client_side_decorations_supported: bool,
         x_main_screen_index: usize,
         x_window: xproto::Window,
@@ -793,6 +830,7 @@ impl X11Window {
             )?)),
             callbacks: Rc::new(RefCell::new(Callbacks::default())),
             xcb: xcb.clone(),
+            xlib_display,
             x_window,
         };
 

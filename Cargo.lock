@@ -2251,6 +2251,7 @@ dependencies = [
  "windows-numerics",
  "windows-registry 0.5.3",
  "x11-clipboard",
+ "x11-dl",
  "x11rb",
  "xkbcommon",
  "zed-font-kit",
@@ -6772,6 +6773,17 @@ checksum = "662d74b3d77e396b8e5beb00b9cad6a9eccf40b2ef68cc858784b14c41d535a3"
 dependencies = [
  "libc",
  "x11rb",
+]
+
+[[package]]
+name = "x11-dl"
+version = "2.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38735924fedd5314a6e548792904ed8c6de6636285cb9fec04d5b1db85c1516f"
+dependencies = [
+ "libc",
+ "once_cell",
+ "pkg-config",
 ]
 
 [[package]]

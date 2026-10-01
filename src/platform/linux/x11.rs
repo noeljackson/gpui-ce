@@ -4,6 +4,7 @@ mod display;
 mod event;
 mod window;
 mod xim_handler;
+mod xlib;
 
 pub(crate) use client::*;
 pub(crate) use display::*;
